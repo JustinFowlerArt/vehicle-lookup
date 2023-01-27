@@ -1,9 +1,9 @@
 import Lookup from '~/components/lookup';
 
 const Home = () => (
-    <div>
-        <h1 className='text-lg text-red-700 font-bold'>Home</h1>
-        <main>
+    <div className='pt-10'>
+        <main className='flex flex-col items-center w-full'>
+            <h1 className='text-lg text-center font-bold mb-4'>Vehicle Lookup</h1>
             <Lookup />
         </main>
     </div>
