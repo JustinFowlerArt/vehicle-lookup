@@ -1,4 +1,4 @@
-export type VehicleInfo = {
+export type vehicleAPI = {
     Count: number;
     Message: string;
     SearchCriteria: string;

@@ -1,12 +1,9 @@
-import Lookup from '~/components/lookup';
+import LoginForm from '~/components/loginForm';
 
-const Home = () => (
-    <div className='pt-10'>
-        <main className='flex flex-col items-center w-full'>
-            <h1 className='text-lg text-center font-bold mb-4'>Vehicle Lookup</h1>
-            <Lookup />
-        </main>
-    </div>
+const Login = () => (
+    <main className='py-8 sm:px-6 lg:px-8'>
+        <LoginForm />
+    </main>
 );
 
-export default Home;
+export default Login;

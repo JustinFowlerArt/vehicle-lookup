@@ -1,11 +1,14 @@
 import { json } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
+import { Link, useLoaderData } from '@remix-run/react';
 import type { LoaderArgs } from '@remix-run/node';
-import type { VehicleInfo } from '~/types/vehicleInfo';
+import type { vehicleAPI } from '~/types/vehicleAPI';
 import google from 'googlethis';
-import ErrorBoundary from '~/components/errorBoundary';
-import { CatchBoundary } from '~/components/catchBoundary';
+import VehicleInfo from '~/components/vehicleInfo';
 
+/**
+ * Extracts vin and year from url searchParams and fetches vehicle information from the NHTSA api. After retrieving the vehicle information, it uses the year, make, and model of the vehicle to perform a Google search and retrieve images.
+ * @returns vehicleDetails and vehicleImages json object
+ */
 export const loader = async ({ request }: LoaderArgs) => {
     const url = new URL(request.url);
     const vin = url.searchParams.get('vin');
@@ -14,7 +17,7 @@ export const loader = async ({ request }: LoaderArgs) => {
     const vehicleRes = await fetch(
         `https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValues/${vin}*BA?format=json&modelyear=${year}`
     );
-    const vehicleAPI: VehicleInfo = await vehicleRes.json();
+    const vehicleAPI: vehicleAPI = await vehicleRes.json();
     const vehicleDetails = vehicleAPI.Results[0];
 
     const googleSearch = await google.image(
@@ -28,6 +31,10 @@ export const loader = async ({ request }: LoaderArgs) => {
     });
 };
 
+/**
+ * Pulls data from loader params, filters vehicleDetails down to the desired list of features and generates the vehicle info component
+ * @returns list of vehicle details and vehicle images
+ */
 const Result = () => {
     const { vehicleDetails, vehicleImages } = useLoaderData<typeof loader>();
 
@@ -79,52 +86,26 @@ const Result = () => {
     ];
 
     return (
-        <div className='grid sm:grid-cols-2'>
-            {vehicleDetails ? (
-                <div className='p-6'>
-                    <div className='px-4 py-5 sm:px-6'>
-                        <h3 className='text-lg font-medium leading-6 text-gray-900'>
-                            Vehicle Information
-                        </h3>
-                        <p className='mt-1 max-w-2xl text-sm text-gray-500'>
-                            Based on the provided VIN number
-                        </p>
-                    </div>
-                    {vehicleFeatures?.map((feature, index) => (
-                        <div
-                            key={index}
-                            className='border-t border-gray-200 py-2'
-                        >
-                            <dl className='sm:divide-y sm:divide-gray-200'>
-                                <div className='sm:grid sm:grid-cols-2 sm:gap-4 sm:py-2 sm:px-6'>
-                                    <dt className='text-sm font-medium text-gray-500'>
-                                        {feature.description}
-                                    </dt>
-                                    <dd className='mt-1 text-sm text-gray-900 sm:mt-0'>
-                                        {feature.property || 'N/A'}
-                                    </dd>
-                                </div>
-                            </dl>
-                        </div>
-                    ))}
-                </div>
-            ) : (
-                <CatchBoundary />
-            )}
-            <div className='p-6'>
-                <ul className='grid lg:grid-cols-2 gap-4 py-5'>
-                    {vehicleImages?.slice(0, 3).map((image, index) => (
-                        <li
-                            key={index}
-                            className={`${
-                                index === 0 ? 'lg:col-span-2' : 'lg:col-span-1'
-                            }`}
-                        >
-                            <img src={image.url} alt={image.origin.title} />
-                        </li>
-                    ))}
-                </ul>
-            </div>
+        <main className='py-8 sm:px-6 lg:px-8'>
+            <VehicleInfo vehicleFeatures={vehicleFeatures} vehicleImages={vehicleImages}/>
+        </main>
+    );
+};
+
+/**
+ * Needs to be expanded to include error handling for other error cases
+ * @returns No vehicle found message and back button
+ */
+export const ErrorBoundary = () => {
+    return (
+        <div className='py-8 px-6 lg:px-8 flex flex-col items-center text-center'>
+            We couldn't find vehicles matching that VIN. Please try again.
+            <Link
+                to='/home'
+                className='w-24 rounded-md mt-4 border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
+            >
+                Go Back
+            </Link>
         </div>
     );
 };
